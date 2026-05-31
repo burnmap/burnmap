@@ -2,9 +2,10 @@
 
 Marketing / waitlist site for Burnmap.
 
-Static — no build step. Three files:
+Static — no build step. Just three files (the logo is embedded inside
+`index.html`, so there is no image folder to upload):
 
-- `index.html` — the page
+- `index.html` — the page (logo baked in)
 - `burnmap-light.css` — styles (light theme + dark-mode tokens)
 - `burnmap-light.js` — ticker, waitlist form, theme toggle, tweaks
 
