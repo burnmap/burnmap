@@ -3,1079 +3,323 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Burnmap — Your real AI bill, before it hits.</title>
-  <meta name="description" content="Burnmap tracks cost at the run level — not per API call, but per agent session. One line of code, no proxy, no latency, and a hard-stop that kills runaway loops before they hit your card." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0D0F0F;
-      --bg2: #111414;
-      --bg3: #161A1A;
-      --border: #1E2424;
-      --amber: #F59E0B;
-      --amber-dim: #92610A;
-      --amber-glow: rgba(245, 158, 11, 0.08);
-      --text: #E8E8E6;
-      --text-dim: #6B7070;
-      --text-mid: #9AA0A0;
-      --mono: 'IBM Plex Mono', monospace;
-      --serif: 'Instrument Serif', serif;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 14px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    a { color: var(--amber); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* NAV */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 32px;
-      height: 56px;
-      background: rgba(13, 15, 15, 0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-logo {
-      font-family: var(--mono);
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--amber);
-      letter-spacing: -0.02em;
-    }
-
-    .nav-logo span { color: var(--text-dim); font-weight: 400; }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: var(--text-mid);
-      font-size: 13px;
-      transition: color 0.15s;
-    }
-
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
-
-    .nav-cta {
-      background: var(--amber);
-      color: #000 !important;
-      padding: 7px 16px;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.02em;
-    }
-
-    .nav-cta:hover { background: #D97706 !important; text-decoration: none !important; }
-
-    /* TICKER */
-    .ticker {
-      margin-top: 56px;
-      background: var(--amber-glow);
-      border-bottom: 1px solid var(--amber-dim);
-      padding: 10px 32px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--text-mid);
-    }
-
-    .ticker-dot {
-      width: 7px; height: 7px;
-      background: var(--amber);
-      border-radius: 50%;
-      flex-shrink: 0;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    .ticker-amount {
-      font-family: var(--mono);
-      font-weight: 600;
-      color: var(--amber);
-      font-size: 13px;
-    }
-
-    /* HERO */
-    .hero {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 96px 32px 80px;
-      text-align: center;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--border);
-      padding: 5px 14px;
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 40px;
-    }
-
-    .hero-badge-dot {
-      width: 5px; height: 5px;
-      background: var(--amber);
-      border-radius: 50%;
-    }
-
-    h1 {
-      font-family: var(--serif);
-      font-size: clamp(36px, 6vw, 58px);
-      font-weight: 400;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      margin-bottom: 24px;
-    }
-
-    h1 em {
-      font-style: italic;
-      color: var(--amber);
-    }
-
-    .hero-sub {
-      font-size: 15px;
-      color: var(--text-mid);
-      line-height: 1.7;
-      max-width: 560px;
-      margin: 0 auto 40px;
-    }
-
-    .hero-install {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 28px;
-    }
-
-    .hero-install code {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      padding: 3px 10px;
-      color: var(--amber);
-      font-family: var(--mono);
-    }
-
-    .hero-form {
-      display: flex;
-      gap: 0;
-      max-width: 460px;
-      margin: 0 auto 20px;
-    }
-
-    .hero-form input[type="email"] {
-      flex: 1;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-right: none;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 13px;
-      padding: 13px 16px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .hero-form input[type="email"]::placeholder { color: var(--text-dim); }
-    .hero-form input[type="email"]:focus { border-color: var(--amber-dim); }
-
-    .hero-form button {
-      background: var(--amber);
-      color: #000;
-      border: none;
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 13px 22px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s;
-    }
-
-    .hero-form button:hover { background: #D97706; }
-
-    .hero-social-proof {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .hero-social-proof strong { color: var(--amber); }
-
-    /* PROOF STRIP */
-    .proof-strip {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--bg2);
-      padding: 28px 32px;
-      overflow: hidden;
-    }
-
-    .proof-inner {
-      max-width: 900px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 32px;
-      text-align: center;
-    }
-
-    .proof-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .proof-num {
-      font-family: var(--serif);
-      font-size: 28px;
-      color: var(--amber);
-    }
-
-    .proof-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    /* SECTION BASE */
-    section {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 96px 32px;
-    }
-
-    .section-label {
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 16px;
-    }
-
-    h2 {
-      font-family: var(--serif);
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 400;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-      margin-bottom: 20px;
-    }
-
-    .section-sub {
-      font-size: 14px;
-      color: var(--text-mid);
-      line-height: 1.7;
-      max-width: 560px;
-      margin-bottom: 56px;
-    }
-
-    /* PROBLEM */
-    .problem-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-bottom: 56px;
-    }
-
-    .problem-card {
-      background: var(--bg2);
-      padding: 32px;
-    }
-
-    .problem-quote {
-      font-family: var(--serif);
-      font-size: 18px;
-      font-style: italic;
-      color: var(--text);
-      line-height: 1.5;
-      margin-bottom: 16px;
-    }
-
-    .problem-meta {
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.04em;
-    }
-
-    .problem-meta strong { color: var(--amber); }
-
-    /* TERMINAL DEMO */
-    .terminal {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      margin-bottom: 56px;
-    }
-
-    .terminal-bar {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .terminal-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--border);
-    }
-
-    .terminal-title {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-left: 8px;
-      letter-spacing: 0.04em;
-    }
-
-    .terminal-body {
-      padding: 28px 32px;
-      font-size: 13px;
-      line-height: 2;
-    }
-
-    .t-comment { color: var(--text-dim); }
-    .t-keyword { color: #7DD3FC; }
-    .t-fn { color: #86EFAC; }
-    .t-str { color: var(--amber); }
-    .t-num { color: #F9A8D4; }
-    .t-output { color: var(--text-mid); margin-top: 8px; }
-    .t-success { color: #4ADE80; }
-    .t-error { color: #F87171; }
-    .t-amber { color: var(--amber); font-weight: 600; }
-
-    /* FEATURES */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .feature-card {
-      background: var(--bg2);
-      padding: 32px;
-      transition: background 0.15s;
-    }
-
-    .feature-card:hover { background: var(--bg3); }
-
-    .feature-num {
-      font-size: 11px;
-      color: var(--amber-dim);
-      letter-spacing: 0.08em;
-      margin-bottom: 16px;
-    }
-
-    .feature-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 10px;
-      line-height: 1.4;
-    }
-
-    .feature-desc {
-      font-size: 12px;
-      color: var(--text-dim);
-      line-height: 1.7;
-    }
-
-    .feature-card.highlight {
-      background: var(--amber-glow);
-      border-left: 2px solid var(--amber);
-    }
-
-    .feature-card.highlight .feature-title { color: var(--amber); }
-
-    /* ARCHITECTURE */
-    .arch-block {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      padding: 40px;
-      margin-bottom: 32px;
-    }
-
-    .arch-flow {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr auto 1fr;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .arch-node {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      padding: 16px 20px;
-    }
-
-    .arch-node-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .arch-node-sub {
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .arch-arrow {
-      font-size: 18px;
-      color: var(--border);
-    }
-
-    .arch-badge {
-      display: inline-block;
-      background: #052e16;
-      border: 1px solid #166534;
-      color: #4ADE80;
-      font-size: 11px;
-      padding: 3px 10px;
-      margin: 4px;
-    }
-
-    .arch-badges { margin-top: 16px; }
-
-    /* PRICING */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .pricing-card {
-      background: var(--bg2);
-      padding: 36px 32px;
-    }
-
-    .pricing-card.featured {
-      background: var(--amber-glow);
-      position: relative;
-    }
-
-    .pricing-badge {
-      display: inline-block;
-      background: var(--amber);
-      color: #000;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 10px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    .pricing-plan {
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-    }
-
-    .pricing-price {
-      font-family: var(--serif);
-      font-size: 40px;
-      color: var(--text);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
-    .pricing-price span {
-      font-family: var(--mono);
-      font-size: 14px;
-      color: var(--text-dim);
-    }
-
-    .pricing-desc {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-bottom: 28px;
-      line-height: 1.6;
-    }
-
-    .pricing-features {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 32px;
-    }
-
-    .pricing-features li {
-      font-size: 12px;
-      color: var(--text-mid);
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .pricing-features li::before {
-      content: '→';
-      color: var(--amber);
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .pricing-cta {
-      display: block;
-      text-align: center;
-      padding: 11px 20px;
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      border: 1px solid var(--border);
-      color: var(--text-mid);
-      transition: all 0.15s;
-      cursor: pointer;
-    }
-
-    .pricing-cta:hover {
-      border-color: var(--amber);
-      color: var(--amber);
-      text-decoration: none;
-    }
-
-    .pricing-cta.primary {
-      background: var(--amber);
-      color: #000;
-      border-color: var(--amber);
-    }
-
-    .pricing-cta.primary:hover {
-      background: #D97706;
-      color: #000;
-    }
-
-    .pricing-note {
-      font-size: 12px;
-      color: var(--text-dim);
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    /* FINAL CTA */
-    .final-cta {
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .final-cta-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 96px 32px;
-      text-align: center;
-    }
-
-    .final-cta h2 { margin-bottom: 16px; }
-
-    .final-cta .section-sub {
-      margin: 0 auto 40px;
-    }
-
-    /* FOOTER */
-    footer {
-      padding: 40px 32px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .footer-logo {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--amber);
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 24px;
-      list-style: none;
-    }
-
-    .footer-links a {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .footer-links a:hover { color: var(--text); text-decoration: none; }
-
-    .footer-copy {
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    /* FORM SUCCESS */
-    .form-success {
-      display: none;
-      text-align: center;
-      padding: 14px;
-      background: #052e16;
-      border: 1px solid #166534;
-      color: #4ADE80;
-      font-size: 13px;
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
-    /* DIVIDER */
-    .section-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 0;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      nav { padding: 0 20px; }
-      .nav-links { display: none; }
-      .hero { padding: 64px 20px 60px; }
-      .proof-inner { grid-template-columns: repeat(2, 1fr); }
-      section { padding: 64px 20px; }
-      .problem-grid { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .arch-flow { grid-template-columns: 1fr; }
-      .arch-arrow { transform: rotate(90deg); }
-      footer { flex-direction: column; gap: 20px; text-align: center; }
-      .hero-form { flex-direction: column; }
-      .hero-form input[type="email"] { border-right: 1px solid var(--border); border-bottom: none; }
-    }
-  </style>
+  <title>burnmap.dev — your real AI bill, before it hits</title>
+  <link href="burnmap-light.css" rel="stylesheet" />
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">burnmap<span>.dev</span></div>
-  <ul class="nav-links">
-    <li><a href="#problem">Problem</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
-  </ul>
-</nav>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" id="nav-logo">burnmap<span class="dot-dev">.dev</span><span class="underbar"></span></div>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a data-scroll="problem">Problem</a></li>
+        <li><a data-scroll="how">How it works</a></li>
+        <li><a data-scroll="features">Features</a></li>
+        <li><a data-scroll="pricing">Pricing</a></li>
+        <li><a class="nav-cta" data-scroll="waitlist">Join waitlist</a></li>
+      </ul>
+      <button class="theme-toggle" id="theme-toggle" title="Switch theme" aria-label="Switch light / dark theme">
+        <span class="tg-glyph"><span class="tg-moon"></span><span class="tg-sun"></span></span>
+      </button>
+    </div>
+  </nav>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-dot"></div>
-  <span>Estimated AI spend wasted by agent loops this week:</span>
-  <span class="ticker-amount" id="ticker-amount">$0.00</span>
-</div>
-
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-badge">
-    <div class="hero-badge-dot"></div>
-    Early access · Free while in beta
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-dot"></div>
+    <span>Estimated AI spend wasted by agent loops this week:</span>
+    <span class="ticker-amount" id="ticker-amount">$0.00</span>
   </div>
-  <h1>Your agent just spent $347.<br /><em>Did you know?</em></h1>
-  <p class="hero-sub">Burnmap tracks cost at the run level — not per API call, but per agent session. One line of code, no proxy, no latency, and a hard-stop that kills runaway loops before they hit your card.</p>
-  <p class="hero-install">3-minute setup. <code>pip install burnmap</code>. Lock in <strong style="color:var(--amber)">$23.40/mo for life</strong>.</p>
 
-  <form class="hero-form" id="hero-form">
-    <input type="email" name="email" placeholder="you@example.com" required />
-    <button type="submit">Show me where my money is going</button>
-  </form>
-  <div class="form-success" id="hero-success">You're in. Check your inbox.</div>
-  <p class="hero-social-proof"><strong id="waitlist-count">312</strong> devs already on the waitlist</p>
-</div>
-
-<hr class="section-divider" />
-
-<!-- PROOF STRIP -->
-<div class="proof-strip">
-  <div class="proof-inner">
-    <div class="proof-stat">
-      <span class="proof-num">$4,200</span>
-      <span class="proof-label">lost in one weekend</span>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Early access · Free while in beta
     </div>
-    <div class="proof-stat">
-      <span class="proof-num">$0.10</span>
-      <span class="proof-label">just to say "Hi" to Claude</span>
-    </div>
-    <div class="proof-stat">
-      <span class="proof-num">50%</span>
-      <span class="proof-label">of AI teams track zero costs</span>
-    </div>
-    <div class="proof-stat">
-      <span class="proof-num">&lt;3 min</span>
-      <span class="proof-label">to full cost visibility</span>
-    </div>
+    <h1>Your agent just spent $347.<br /><em>Did you know?</em></h1>
+    <p class="hero-sub">Burnmap tracks cost at the run level — not per API call, but per agent session. One line of code, no proxy, no latency, and a hard-stop that kills runaway loops before they hit your card.</p>
+    <p class="hero-install">3-minute setup. <code>pip install burnmap</code>. Lock in <strong>$23.40/mo for life</strong>.</p>
+    <div class="hero-form-mount" data-form></div>
+    <p class="hero-social-proof"><strong data-count>312</strong> devs already on the waitlist</p>
   </div>
-</div>
 
-<hr class="section-divider" />
+  <hr class="section-divider" />
 
-<!-- PROBLEM -->
-<section id="problem">
-  <p class="section-label">// the problem</p>
-  <h2>You have no idea what your agent cost yesterday.</h2>
-  <p class="section-sub">One monthly charge from Anthropic or OpenAI. No breakdown. No attribution. No alerts. Just a number that keeps growing with no way to know which run caused it.</p>
-
-  <div class="problem-grid">
-    <div class="problem-card">
-      <p class="problem-quote">"had no idea it would be this much"</p>
-      <p class="problem-meta">— r/ClaudeAI · <strong>$340 overnight</strong></p>
-    </div>
-    <div class="problem-card">
-      <p class="problem-quote">"I lost $4,200 in one weekend to an agent loop I didn't know was running"</p>
-      <p class="problem-meta">— r/cursor · <strong>autonomous refactor job</strong></p>
-    </div>
-    <div class="problem-card">
-      <p class="problem-quote">"Cursor gave me a $350 bill in a week. Zero alerts. Zero visibility."</p>
-      <p class="problem-meta">— r/ChatGPTCoding · <strong>single project</strong></p>
-    </div>
-    <div class="problem-card">
-      <p class="problem-quote">"I had to write my own script just to understand the costs"</p>
-      <p class="problem-meta">— HackerNews · <strong>solo developer</strong></p>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- HOW IT WORKS -->
-<section id="how">
-  <p class="section-label">// how it works</p>
-  <h2>One decorator. Full run attribution.</h2>
-  <p class="section-sub">Tag any block of code as a run. Every LLM call inside gets grouped, attributed, and counted. You see the full cost of that session — not thousands of individual calls.</p>
-
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="terminal-dot"></div>
-      <div class="terminal-dot"></div>
-      <div class="terminal-dot"></div>
-      <span class="terminal-title">auth_refactor.py</span>
-    </div>
-    <div class="terminal-body">
-      <div><span class="t-keyword">import</span> burnmap</div>
-      <div>&nbsp;</div>
-      <div><span class="t-comment"># Tag a session. Set a budget. That's it.</span></div>
-      <div><span class="t-keyword">with</span> burnmap.<span class="t-fn">run</span>(<span class="t-str">"auth-refactor"</span>, budget=<span class="t-num">2.00</span>):</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;agent.<span class="t-fn">run</span>(<span class="t-str">"Refactor the auth module to use JWT"</span>)</div>
-      <div>&nbsp;</div>
-      <div class="t-output">──────────────────────────────────────</div>
-      <div class="t-output">  Run: <span style="color:var(--text)">auth-refactor</span></div>
-      <div class="t-output">  Cost: <span class="t-amber">$0.84</span>  ·  Calls: <span style="color:var(--text)">12</span>  ·  Duration: <span style="color:var(--text)">3m 14s</span></div>
-      <div class="t-output">  Model: claude-3-5-sonnet  ·  Tokens: 84,320</div>
-      <div class="t-output">  Step breakdown: context 40% · generation 38% · tools 22%</div>
-      <div class="t-output">──────────────────────────────────────</div>
-      <div class="t-success">  ✓ Under budget ($2.00 limit)</div>
+  <!-- PROOF STRIP -->
+  <div class="proof-strip">
+    <div class="proof-inner">
+      <div class="proof-stat"><span class="proof-num">$4,200</span><span class="proof-label">lost in one weekend</span></div>
+      <div class="proof-stat"><span class="proof-num">$0.10</span><span class="proof-label">just to say "Hi" to Claude</span></div>
+      <div class="proof-stat"><span class="proof-num">50%</span><span class="proof-label">of AI teams track zero costs</span></div>
+      <div class="proof-stat"><span class="proof-num">&lt;3 min</span><span class="proof-label">to full cost visibility</span></div>
     </div>
   </div>
 
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="terminal-dot"></div>
-      <div class="terminal-dot"></div>
-      <div class="terminal-dot"></div>
-      <span class="terminal-title">budget_exceeded.py — what a $20 hard-stop looks like</span>
-    </div>
-    <div class="terminal-body">
-      <div><span class="t-keyword">with</span> burnmap.<span class="t-fn">run</span>(<span class="t-str">"overnight-refactor"</span>, budget=<span class="t-num">20.00</span>):</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-keyword">try</span>:</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;agent.<span class="t-fn">run</span>(<span class="t-str">"Refactor the entire codebase"</span>)</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-keyword">except</span> burnmap.<span class="t-fn">BudgetExceededError</span> <span class="t-keyword">as</span> e:</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-fn">print</span>(e)</div>
-      <div>&nbsp;</div>
-      <div class="t-output">──────────────────────────────────────</div>
-      <div class="t-error">  ✗ BudgetExceededError: run stopped at $20.00</div>
-      <div class="t-amber">  Burnmap stopped your agent. Estimated savings: $4,180.00.</div>
-      <div class="t-output">──────────────────────────────────────</div>
-    </div>
-  </div>
-</section>
+  <hr class="section-divider" />
 
-<hr class="section-divider" />
-
-<!-- ARCHITECTURE -->
-<section id="architecture">
-  <p class="section-label">// architecture</p>
-  <h2>No proxy. No latency. No risk.</h2>
-  <p class="section-sub">Your LLM calls go directly to the provider — always. Burnmap intercepts metadata asynchronously, off the critical path. If Burnmap goes down, your app keeps running.</p>
-
-  <div class="arch-block">
-    <div class="arch-flow">
-      <div class="arch-node">
-        <div class="arch-node-label">Your App</div>
-        <div class="arch-node-sub">unchanged</div>
+  <!-- PROBLEM -->
+  <section id="problem">
+    <p class="section-label">// the problem</p>
+    <h2>You have no idea what your agent cost yesterday.</h2>
+    <p class="section-sub">One monthly charge from Anthropic or OpenAI. No breakdown. No attribution. No alerts. Just a number that keeps growing with no way to know which run caused it.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <p class="problem-quote">"had no idea it would be this much"</p>
+        <p class="problem-meta">— r/ClaudeAI · <strong>$340 overnight</strong></p>
       </div>
-      <div class="arch-arrow">→</div>
-      <div class="arch-node">
-        <div class="arch-node-label">LLM API</div>
-        <div class="arch-node-sub">direct · zero latency</div>
+      <div class="problem-card">
+        <p class="problem-quote">"I lost $4,200 in one weekend to an agent loop I didn't know was running"</p>
+        <p class="problem-meta">— r/cursor · <strong>autonomous refactor job</strong></p>
       </div>
-      <div class="arch-arrow">→</div>
-      <div class="arch-node">
-        <div class="arch-node-label">Response</div>
-        <div class="arch-node-sub">unmodified</div>
+      <div class="problem-card">
+        <p class="problem-quote">"Cursor gave me a $350 bill in a week. Zero alerts. Zero visibility."</p>
+        <p class="problem-meta">— r/ChatGPTCoding · <strong>single project</strong></p>
+      </div>
+      <div class="problem-card">
+        <p class="problem-quote">"I had to write my own script just to understand the costs"</p>
+        <p class="problem-meta">— HackerNews · <strong>solo developer</strong></p>
       </div>
     </div>
-    <div style="text-align:center; font-size:12px; color:var(--text-dim); margin-bottom: 8px;">↕ async · off critical path</div>
-    <div style="text-align:center;">
-      <div class="arch-node" style="display:inline-block;">
-        <div class="arch-node-label">Burnmap SDK</div>
-        <div class="arch-node-sub">metadata only · never your keys</div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <p class="section-label">// how it works</p>
+    <h2>One decorator. Full run attribution.</h2>
+    <p class="section-sub">Tag any block of code as a run. Every LLM call inside gets grouped, attributed, and counted. You see the full cost of that session — not thousands of individual calls.</p>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div>
+        <span class="terminal-title">auth_refactor.py</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-keyword">import</span> burnmap</div>
+        <div>&nbsp;</div>
+        <div><span class="t-comment"># Tag a session. Set a budget. That's it.</span></div>
+        <div><span class="t-keyword">with</span> burnmap.<span class="t-fn">run</span>(<span class="t-str">"auth-refactor"</span>, budget=<span class="t-num">2.00</span>):</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;agent.<span class="t-fn">run</span>(<span class="t-str">"Refactor the auth module to use JWT"</span>)</div>
+        <div>&nbsp;</div>
+        <div class="t-output">──────────────────────────────────────</div>
+        <div class="t-output">  Run: <span class="t-white">auth-refactor</span></div>
+        <div class="t-output">  Cost: <span class="t-burn">$0.84</span>  ·  Calls: <span class="t-white">12</span>  ·  Duration: <span class="t-white">3m 14s</span></div>
+        <div class="t-output">  Model: claude-3-5-sonnet  ·  Tokens: 84,320</div>
+        <div class="t-output">  Step breakdown: context 40% · generation 38% · tools 22%</div>
+        <div class="t-output">──────────────────────────────────────</div>
+        <div class="t-success">  ✓ Under budget ($2.00 limit)</div>
       </div>
     </div>
-    <div class="arch-badges" style="text-align:center; margin-top:24px;">
-      <span class="arch-badge">zero added latency</span>
-      <span class="arch-badge">API keys stay local</span>
-      <span class="arch-badge">failure-safe</span>
-      <span class="arch-badge">pip install burnmap</span>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div>
+        <span class="terminal-title">budget_exceeded.py — what a $20 hard-stop looks like</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-keyword">with</span> burnmap.<span class="t-fn">run</span>(<span class="t-str">"overnight-refactor"</span>, budget=<span class="t-num">20.00</span>):</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-keyword">try</span>:</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;agent.<span class="t-fn">run</span>(<span class="t-str">"Refactor the entire codebase"</span>)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-keyword">except</span> burnmap.<span class="t-fn">BudgetExceededError</span> <span class="t-keyword">as</span> e:</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-fn">print</span>(e)</div>
+        <div>&nbsp;</div>
+        <div class="t-output">──────────────────────────────────────</div>
+        <div class="t-error">  ✗ BudgetExceededError: run stopped at $20.00</div>
+        <div class="t-burn">  Burnmap stopped your agent. Estimated savings: $4,180.00.</div>
+        <div class="t-output">──────────────────────────────────────</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <p class="section-label">// architecture</p>
+    <h2>No proxy. No latency. No risk.</h2>
+    <p class="section-sub">Your LLM calls go directly to the provider — always. Burnmap intercepts metadata asynchronously, off the critical path. If Burnmap goes down, your app keeps running.</p>
+    <div class="arch-block">
+      <div class="arch-flow">
+        <div class="arch-node"><div class="arch-node-label">Your App</div><div class="arch-node-sub">unchanged</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node"><div class="arch-node-label">LLM API</div><div class="arch-node-sub">direct · zero latency</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node"><div class="arch-node-label">Response</div><div class="arch-node-sub">unmodified</div></div>
+      </div>
+      <div class="arch-async">↕ async · off critical path</div>
+      <div style="text-align:center;">
+        <div class="arch-node" style="display:inline-block;">
+          <div class="arch-node-label">Burnmap SDK</div>
+          <div class="arch-node-sub">metadata only · never your keys</div>
+        </div>
+      </div>
+      <div class="arch-badges">
+        <span class="arch-badge">zero added latency</span>
+        <span class="arch-badge">API keys stay local</span>
+        <span class="arch-badge">failure-safe</span>
+        <span class="arch-badge">pip install burnmap</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- FEATURES -->
+  <section id="features">
+    <p class="section-label">// features</p>
+    <h2>Five features. Nothing more.</h2>
+    <p class="section-sub">Built for solo developers who want to understand their costs and stop runaway runs. No configuration, no dashboards to babysit, no noise.</p>
+    <div class="features-grid">
+      <div class="feature-card highlight">
+        <div class="feature-num">01 · HEADLINE</div>
+        <div class="feature-title">Hard-stop budget enforcement</div>
+        <div class="feature-desc">Set a dollar limit on any run. When hit, the SDK throws a catchable <code>BudgetExceededError</code> and stops making calls. The $4,200 weekend is literally impossible.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">02</div>
+        <div class="feature-title">Agent-run grouping + attribution</div>
+        <div class="feature-desc">Tag a block of code. Every LLM call inside gets grouped into one run with total cost, call count, duration, and model breakdown.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">03</div>
+        <div class="feature-title">Step-level cost breakdown</div>
+        <div class="feature-desc">Knowing step 7 consumed 60% of a run changes how you write code. This is the feature that makes developers actually change behavior.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">04</div>
+        <div class="feature-title">Budget alerts</div>
+        <div class="feature-desc">Slack or email. Fires when a run approaches its limit, daily spend crosses a threshold, or your monthly forecast looks wrong. Before the damage, not after.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">05</div>
+        <div class="feature-title">Shareable run reports</div>
+        <div class="feature-desc">"Here is the cost report for the agent I built you." One URL, no login required. Useful when talking to clients.</div>
+      </div>
+      <div class="feature-card models">
+        <div>
+          <div class="models-label">Models supported</div>
+          <div class="models-list">Claude · OpenAI<br />Gemini · Groq · OpenRouter</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <p class="section-label">// pricing</p>
+    <h2>No cliffs. No surprises.</h2>
+    <p class="section-sub">Flat rate. No per-request fees. No seat fees on Indie. Pay for the tool, not for using it.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-plan">Free</div>
+        <div class="pricing-price">$0<span>/mo</span></div>
+        <div class="pricing-desc">Everything you need to start tracking. No credit card.</div>
+        <ul class="pricing-features">
+          <li>50k logged calls/month</li>
+          <li>30-day retention</li>
+          <li>1 project</li>
+          <li>Claude + OpenAI</li>
+          <li>All 5 core features</li>
+        </ul>
+        <a class="pricing-cta" data-scroll="waitlist">Join waitlist</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most popular</div>
+        <div class="pricing-plan">Indie</div>
+        <div class="pricing-price">$39<span>/mo</span></div>
+        <div class="pricing-desc">For developers building production LLM products. Lock in $23.40/mo for life if you upgrade within 30 days of launch.</div>
+        <ul class="pricing-features">
+          <li>Unlimited logged calls</li>
+          <li>1-year retention</li>
+          <li>5 projects</li>
+          <li>Email + Slack alerts</li>
+          <li>Per-run budget enforcement</li>
+          <li>API access</li>
+        </ul>
+        <a class="pricing-cta primary" data-scroll="waitlist">Lock in $23.40/mo for life</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan">Team</div>
+        <div class="pricing-price">$99<span>/mo</span></div>
+        <div class="pricing-desc">For small teams who need shared visibility and budget controls.</div>
+        <ul class="pricing-features">
+          <li>3 seats included</li>
+          <li>Unlimited projects</li>
+          <li>Per-user budget caps</li>
+          <li>Shared dashboards</li>
+          <li>Approval workflows</li>
+          <li>CSV export · Priority support</li>
+        </ul>
+        <a class="pricing-cta" data-scroll="waitlist">Join waitlist</a>
+      </div>
+    </div>
+    <p class="pricing-note">Free while in beta. All plans include the full feature set.</p>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- FINAL CTA -->
+  <div class="final-cta" id="waitlist">
+    <div class="final-cta-inner">
+      <p class="section-label">// join the waitlist</p>
+      <h2>Stop finding out what your agent cost <em>after.</em></h2>
+      <p class="section-sub">Free tier forever. Lock in $23.40/mo for life if you upgrade within 30 days of launch. 3-minute setup.</p>
+      <div class="hero-form-mount" data-form></div>
+      <p class="hero-social-proof" style="margin-top:12px;"><strong data-count>312</strong> devs already on the waitlist · <code style="font-size:11px;">pip install burnmap</code></p>
     </div>
   </div>
-</section>
 
-<hr class="section-divider" />
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">burnmap<span class="dot-dev">.dev</span><span class="underbar"></span></div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/burnmap">GitHub</a></li>
+      <li><a href="https://x.com/getburnmap">@getburnmap</a></li>
+      <li><a href="mailto:remon@burnmap.dev">remon@burnmap.dev</a></li>
+    </ul>
+    <p class="footer-copy">© 2026 Burnmap</p>
+  </footer>
 
-<!-- FEATURES -->
-<section id="features">
-  <p class="section-label">// features</p>
-  <h2>Five features. Nothing more.</h2>
-  <p class="section-sub">Built for solo developers who want to understand their costs and stop runaway runs. No configuration, no dashboards to babysit, no noise.</p>
-
-  <div class="features-grid">
-    <div class="feature-card highlight">
-      <div class="feature-num">01 · HEADLINE</div>
-      <div class="feature-title">Hard-stop budget enforcement</div>
-      <div class="feature-desc">Set a dollar limit on any run. When hit, the SDK throws a catchable <code>BudgetExceededError</code> and stops making calls. The $4,200 weekend is literally impossible.</div>
+  <!-- TWEAKS PANEL -->
+  <div id="tw-panel">
+    <div class="tw-head">
+      <span>Tweaks</span>
+      <button id="tw-close" title="Close">✕</button>
     </div>
-    <div class="feature-card">
-      <div class="feature-num">02</div>
-      <div class="feature-title">Agent-run grouping + attribution</div>
-      <div class="feature-desc">Tag a block of code. Every LLM call inside gets grouped into one run with total cost, call count, duration, and model breakdown.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-num">03</div>
-      <div class="feature-title">Step-level cost breakdown</div>
-      <div class="feature-desc">Knowing step 7 consumed 60% of a run changes how you write code. This is the feature that makes developers actually change behavior.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-num">04</div>
-      <div class="feature-title">Budget alerts</div>
-      <div class="feature-desc">Slack or email. Fires when a run approaches its limit, daily spend crosses a threshold, or your monthly forecast looks wrong. Before the damage, not after.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-num">05</div>
-      <div class="feature-title">Shareable run reports</div>
-      <div class="feature-desc">One URL, no login required. "Here is the cost report for the agent I built you." Useful when talking to clients. Costs almost nothing to build.</div>
-    </div>
-    <div class="feature-card" style="background:var(--bg); display:flex; align-items:center; justify-content:center; text-align:center; padding:40px;">
+    <div class="tw-body">
       <div>
-        <div style="font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Models supported</div>
-        <div style="font-size:13px;color:var(--text-mid);line-height:2;">Claude · OpenAI<br/>Gemini · Groq · OpenRouter</div>
+        <div class="tw-group-label">Theme</div>
+        <div class="tw-seg" id="tw-theme">
+          <button data-v="light">Light</button>
+          <button data-v="dark">Dark</button>
+        </div>
+      </div>
+      <div>
+        <div class="tw-group-label">Accent</div>
+        <div class="tw-swatches" id="tw-accent"></div>
+      </div>
+      <div>
+        <div class="tw-group-label">Page</div>
+        <div class="tw-seg" id="tw-paper">
+          <button data-v="warm">Warm paper</button>
+          <button data-v="cool">Cool white</button>
+        </div>
+      </div>
+      <div>
+        <div class="tw-group-label">Terminals</div>
+        <div class="tw-seg" id="tw-term">
+          <button data-v="dark">Dark</button>
+          <button data-v="light">Light</button>
+        </div>
       </div>
     </div>
   </div>
-</section>
 
-<hr class="section-divider" />
-
-<!-- PRICING -->
-<section id="pricing">
-  <p class="section-label">// pricing</p>
-  <h2>No cliffs. No surprises.</h2>
-  <p class="section-sub">Flat rate. No per-request fees. No seat fees on Indie. Pay for the tool, not for using it.</p>
-
-  <div class="pricing-grid">
-    <div class="pricing-card">
-      <div class="pricing-plan">Free</div>
-      <div class="pricing-price">$0<span>/mo</span></div>
-      <div class="pricing-desc">Everything you need to start tracking. No credit card.</div>
-      <ul class="pricing-features">
-        <li>50k logged calls/month</li>
-        <li>30-day retention</li>
-        <li>1 project</li>
-        <li>Claude + OpenAI</li>
-        <li>All 5 core features</li>
-      </ul>
-      <a href="#waitlist" class="pricing-cta">Join waitlist</a>
-    </div>
-    <div class="pricing-card featured">
-      <div class="pricing-badge">Most popular</div>
-      <div class="pricing-plan">Indie</div>
-      <div class="pricing-price">$39<span>/mo</span></div>
-      <div class="pricing-desc">For developers building production LLM products. Lock in $23.40/mo for life if you upgrade within 30 days of launch.</div>
-      <ul class="pricing-features">
-        <li>Unlimited logged calls</li>
-        <li>1-year retention</li>
-        <li>5 projects</li>
-        <li>Email + Slack alerts</li>
-        <li>Per-run budget enforcement</li>
-        <li>API access</li>
-      </ul>
-      <a href="#waitlist" class="pricing-cta primary">Lock in $23.40/mo for life</a>
-    </div>
-    <div class="pricing-card">
-      <div class="pricing-plan">Team</div>
-      <div class="pricing-price">$99<span>/mo</span></div>
-      <div class="pricing-desc">For small teams who need shared visibility and budget controls.</div>
-      <ul class="pricing-features">
-        <li>3 seats included</li>
-        <li>Unlimited projects</li>
-        <li>Per-user budget caps</li>
-        <li>Shared dashboards</li>
-        <li>Approval workflows</li>
-        <li>CSV export · Priority support</li>
-      </ul>
-      <a href="#waitlist" class="pricing-cta">Join waitlist</a>
-    </div>
-  </div>
-  <p class="pricing-note">Free while in beta. All plans include the full feature set.</p>
-</section>
-
-<hr class="section-divider" />
-
-<!-- FINAL CTA -->
-<div class="final-cta" id="waitlist">
-  <div class="final-cta-inner">
-    <p class="section-label">// join the waitlist</p>
-    <h2>Stop finding out what your agent cost <em>after.</em></h2>
-    <p class="section-sub">Free tier forever. Lock in $23.40/mo for life if you upgrade within 30 days of launch. 3-minute setup.</p>
-
-    <form class="hero-form" id="footer-form" style="margin-bottom:16px;">
-      <input type="email" name="email" placeholder="you@example.com" required />
-      <button type="submit">Show me where my money is going</button>
-    </form>
-    <div class="form-success" id="footer-success">You're in. Check your inbox.</div>
-    <p class="hero-social-proof" style="margin-top:12px;"><strong id="waitlist-count-2">312</strong> devs already on the waitlist · <code style="font-size:11px;">pip install burnmap</code></p>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">burnmap.dev</div>
-  <ul class="footer-links">
-    <li><a href="https://github.com/burnmap">GitHub</a></li>
-    <li><a href="https://x.com/getburnmap">@getburnmap</a></li>
-    <li><a href="mailto:remon@burnmap.dev">remon@burnmap.dev</a></li>
-  </ul>
-  <p class="footer-copy">© 2026 Burnmap</p>
-</footer>
-
-<script>
-  // Ticking cost counter
-  const WEEKLY_WASTE = 284000; // $284k/week estimated
-  const START = Date.now();
-  const ticker = document.getElementById('ticker-amount');
-
-  function updateTicker() {
-    const elapsed = (Date.now() - START) / 1000;
-    const perSecond = WEEKLY_WASTE / (7 * 24 * 3600);
-    const amount = (elapsed * perSecond).toFixed(2);
-    ticker.textContent = '$' + parseFloat(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  }
-  setInterval(updateTicker, 100);
-
-  // Animated waitlist counter
-  let count = 312;
-  setInterval(() => {
-    if (Math.random() < 0.03) {
-      count++;
-      document.getElementById('waitlist-count').textContent = count;
-      document.getElementById('waitlist-count-2').textContent = count;
-    }
-  }, 5000);
-
-  // Form submission to Loops (official handler)
-  async function submitToLoops(email, successEl, formEl) {
-    const time = new Date();
-    const timestamp = time.valueOf();
-    const previousTimestamp = localStorage.getItem('loops-form-timestamp');
-    if (previousTimestamp && Number(previousTimestamp) + 60000 > timestamp) {
-      return; // rate limit
-    }
-    localStorage.setItem('loops-form-timestamp', timestamp);
-
-    const btn = formEl.querySelector('button');
-    btn.textContent = 'Please wait...';
-    btn.disabled = true;
-
-    try {
-      const res = await fetch('https://app.loops.so/api/newsletter-form/cmpocehvs05xt0j10toapg5co', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `userGroup=&mailingLists=&email=${encodeURIComponent(email)}`
-      });
-      if (res.ok) {
-        formEl.style.display = 'none';
-        successEl.style.display = 'block';
-        count++;
-        document.getElementById('waitlist-count').textContent = count;
-        document.getElementById('waitlist-count-2').textContent = count;
-      } else {
-        btn.textContent = 'Show me where my money is going';
-        btn.disabled = false;
-        localStorage.setItem('loops-form-timestamp', '');
-      }
-    } catch(e) {
-      btn.textContent = 'Show me where my money is going';
-      btn.disabled = false;
-      localStorage.setItem('loops-form-timestamp', '');
-    }
-  }
-
-  document.getElementById('hero-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const email = this.querySelector('input[type="email"]').value;
-    submitToLoops(email, document.getElementById('hero-success'), this);
-  });
-
-  document.getElementById('footer-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const email = this.querySelector('input[type="email"]').value;
-    submitToLoops(email, document.getElementById('footer-success'), this);
-  });
-</script>
-
+  <script src="burnmap-light.js"></script>
 </body>
 </html>
